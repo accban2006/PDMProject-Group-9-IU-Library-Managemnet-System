@@ -53,7 +53,7 @@ public class ViewAllRecord extends JFrame {
 
     private int id;
     private String uname;
-    private String usertype;
+    private String userrole;
 
     private JSpinner fromDateSpinner;
     private JSpinner toDateSpinner;
@@ -72,10 +72,10 @@ public class ViewAllRecord extends JFrame {
         this(0, null, null);
     }
 
-    public ViewAllRecord(int id, String username, String utype) {
+    public ViewAllRecord(int id, String username, String urole) {
         this.id = id;
         this.uname = username;
-        this.usertype = utype;
+        this.userrole = urole;
         initializeUi();
         Connect();
         SwingUtilities.invokeLater(() -> {
@@ -112,7 +112,7 @@ public class ViewAllRecord extends JFrame {
         backButton.setForeground(Color.WHITE);
         backButton.setFocusPainted(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, usertype)));
+        backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, userrole)));
 
         header.add(backButton, BorderLayout.WEST);
 
@@ -368,10 +368,10 @@ public class ViewAllRecord extends JFrame {
 
         // Join [operate].[Message] with auth_reader to get reader name
         String sql = "select m.MessID, m.MessNo, m.ReaderID, " +
-                     "r.FirstName, r.MiddleName, r.LastName, m.MessInfo " +
-                     "from [operate].[Message] m " +
-                     "inner join [auth].[Reader] r on m.ReaderID = r.ReaderID " +
-                     "order by m.MessID DESC";
+                "r.FirstName, r.MiddleName, r.LastName, m.MessInfo " +
+                "from [operate].[Message] m " +
+                "inner join [auth].[Reader] r on m.ReaderID = r.ReaderID " +
+                "order by m.MessID DESC";
 
         try (PreparedStatement stmt = con.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -399,11 +399,11 @@ public class ViewAllRecord extends JFrame {
                 }
 
                 messagesTableModel.addRow(new Object[]{
-                    rs.getInt("MessID"),
-                    rs.getInt("MessNo"),
-                    rs.getInt("ReaderID"),
-                    readerName,
-                    rs.getString("MessInfo")
+                        rs.getInt("MessID"),
+                        rs.getInt("MessNo"),
+                        rs.getInt("ReaderID"),
+                        readerName,
+                        rs.getString("MessInfo")
                 });
             }
         } catch (SQLException ex) {
@@ -421,19 +421,19 @@ public class ViewAllRecord extends JFrame {
 
         // Join operate_report with auth_staff to get staff name
         String sql = "select r.ReportID, r.ReportNo, r.StaffID, s.StaffName, r.Issue " +
-                     "from [operate].[Report] r " +
-                     "inner join [auth].[Staff] s on r.StaffID = s.StaffID " +
-                     "order by r.ReportID DESC";
+                "from [operate].[Report] r " +
+                "inner join [auth].[Staff] s on r.StaffID = s.StaffID " +
+                "order by r.ReportID DESC";
 
         try (PreparedStatement stmt = con.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 reportsTableModel.addRow(new Object[]{
-                    rs.getInt("ReportID"),
-                    rs.getInt("ReportNo"),
-                    rs.getInt("StaffID"),
-                    rs.getString("StaffName") != null ? rs.getString("StaffName") : "-",
-                    rs.getString("Issue") != null ? rs.getString("Issue") : "-"
+                        rs.getInt("ReportID"),
+                        rs.getInt("ReportNo"),
+                        rs.getInt("StaffID"),
+                        rs.getString("StaffName") != null ? rs.getString("StaffName") : "-",
+                        rs.getString("Issue") != null ? rs.getString("Issue") : "-"
                 });
             }
         } catch (SQLException ex) {
@@ -477,7 +477,7 @@ public class ViewAllRecord extends JFrame {
 
     private void updateUserContext() {
         String displayName = (uname == null || uname.trim().isEmpty()) ? "Guest" : uname;
-        String displayRole = (usertype == null || usertype.trim().isEmpty()) ? "Guest" : usertype;
+        String displayRole = (userrole == null || userrole.trim().isEmpty()) ? "Guest" : userrole;
         welcomeValueLabel.setText(displayName);
         roleValueLabel.setText(displayRole);
     }
@@ -488,13 +488,11 @@ public class ViewAllRecord extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;" +
-            "databaseName=LibraryManagementSystemGroup9" +
-            ";user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Database connection failed", ex);
-            JOptionPane.showMessageDialog(this, "Unable to connect to database.", 
-            "Database Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Unable to connect to database.",
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -507,15 +505,15 @@ public class ViewAllRecord extends JFrame {
 
         // Join [loan].[Loan] with auth_reader and lib_book to get all required information
         String sql = "select l.ISBN, b.title, l.ReaderID, " +
-                     "r.FirstName, r.MiddleName, r.LastName, " +
-                     "l.BorrowDate, l.DueDate, l.Status " +
-                     "from [loan].[Loan] l " +
-                     "inner join [auth].[Reader] r on l.ReaderID = r.ReaderID " +
-                     "inner join [lib].[Book] b on l.ISBN = b.ISBN " +
-                     "order by l.BorrowDate DESC";
-        
+                "r.FirstName, r.MiddleName, r.LastName, " +
+                "l.BorrowDate, l.ReturnDate, l.Status " +
+                "from [loan].[Loan] l " +
+                "inner join [auth].[Reader] r on l.ReaderID = r.ReaderID " +
+                "inner join [lib].[Book] b on l.ISBN = b.ISBN " +
+                "order by l.BorrowDate DESC";
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        
+
         try (PreparedStatement stmt = con.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -523,7 +521,7 @@ public class ViewAllRecord extends JFrame {
                 String fname = rs.getString("FirstName");
                 String mname = rs.getString("MiddleName");
                 String lname = rs.getString("LastName");
-                
+
                 StringBuilder fullName = new StringBuilder();
                 if (fname != null && !fname.isEmpty()) {
                     fullName.append(fname);
@@ -540,27 +538,27 @@ public class ViewAllRecord extends JFrame {
                 if (readerName.isEmpty()) {
                     readerName = "-";
                 }
-                
+
                 // Format dates
                 java.sql.Date borrowDate = rs.getDate("BorrowDate");
-                java.sql.Date dueDate = rs.getDate("DueDate");
+                java.sql.Date returnDate = rs.getDate("ReturnDate");
                 String issueDateStr = borrowDate != null ? dateFormat.format(borrowDate) : "-";
-                String dueDateStr = dueDate != null ? dateFormat.format(dueDate) : "-";
-                
+                String returnDateStr = returnDate != null ? dateFormat.format(returnDate) : "-";
+
                 // Get status
                 String status = rs.getString("Status");
                 if (status == null || status.isEmpty()) {
                     status = "pending";
                 }
-                
+
                 tableModel.addRow(new Object[]{
-                    rs.getString("ISBN"),                    // Book ID
-                    rs.getString("title") != null ? rs.getString("title") : "-",  // Book Name
-                    String.valueOf(rs.getInt("ReaderID")),   // Reader ID
-                    readerName,                              // Reader Name
-                    issueDateStr,                            // Issue Date
-                    dueDateStr,                              // Due Date
-                    status                                   // Status
+                        rs.getString("ISBN"),                    // Book ID
+                        rs.getString("title") != null ? rs.getString("title") : "-",  // Book Name
+                        String.valueOf(rs.getInt("ReaderID")),   // Reader ID
+                        readerName,                              // Reader Name
+                        issueDateStr,                            // Issue Date
+                        returnDateStr,                              // Due Date
+                        status                                   // Status
                 });
             }
         } catch (SQLException ex) {
@@ -595,14 +593,14 @@ public class ViewAllRecord extends JFrame {
 
         // Join [loan].[Loan] with auth_reader and lib_book to get all required information
         String sql = "select l.ISBN, b.title, l.ReaderID, " +
-                     "r.FirstName, r.MiddleName, r.LastName, " +
-                     "l.BorrowDate, l.DueDate, l.Status " +
-                     "from [loan].[Loan] l " +
-                     "inner join [auth].[Reader] r on l.ReaderID = r.ReaderID " +
-                     "inner join [lib].[Book] b on l.ISBN = b.ISBN " +
-                     "where l.BorrowDate BETWEEN ? and ? " +
-                     "order by l.BorrowDate DESC";
-        
+                "r.FirstName, r.MiddleName, r.LastName, " +
+                "l.BorrowDate, l.ReturnDate, l.Status " +
+                "from [loan].[Loan] l " +
+                "inner join [auth].[Reader] r on l.ReaderID = r.ReaderID " +
+                "inner join [lib].[Book] b on l.ISBN = b.ISBN " +
+                "where l.BorrowDate BETWEEN ? and ? " +
+                "order by l.BorrowDate DESC";
+
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, fromDateStr);
             stmt.setString(2, toDateStr);
@@ -610,12 +608,12 @@ public class ViewAllRecord extends JFrame {
                 boolean found = false;
                 while (rs.next()) {
                     found = true;
-                    
+
                     // Build reader full name
                     String fname = rs.getString("FirstName");
                     String mname = rs.getString("MiddleName");
                     String lname = rs.getString("LastName");
-                    
+
                     StringBuilder fullName = new StringBuilder();
                     if (fname != null && !fname.isEmpty()) {
                         fullName.append(fname);
@@ -632,27 +630,27 @@ public class ViewAllRecord extends JFrame {
                     if (readerName.isEmpty()) {
                         readerName = "-";
                     }
-                    
+
                     // Format dates
                     java.sql.Date borrowDate = rs.getDate("BorrowDate");
-                    java.sql.Date dueDate = rs.getDate("DueDate");
+                    java.sql.Date returnDate = rs.getDate("Date");
                     String issueDateStr = borrowDate != null ? df.format(borrowDate) : "-";
-                    String dueDateStr = dueDate != null ? df.format(dueDate) : "-";
-                    
+                    String returnDateStr = returnDate != null ? df.format(returnDate) : "-";
+
                     // Get status
                     String status = rs.getString("Status");
                     if (status == null || status.isEmpty()) {
                         status = "pending";
                     }
-                    
+
                     tableModel.addRow(new Object[]{
-                        rs.getString("ISBN"),                    // Book ID
-                        rs.getString("title") != null ? rs.getString("title") : "-",  // Book Name
-                        String.valueOf(rs.getInt("ReaderID")),   // Reader ID
-                        readerName,                              // Reader Name
-                        issueDateStr,                            // Issue Date
-                        dueDateStr,                              // Due Date
-                        status                                   // Status
+                            rs.getString("ISBN"),                    // Book ID
+                            rs.getString("title") != null ? rs.getString("title") : "-",  // Book Name
+                            String.valueOf(rs.getInt("ReaderID")),   // Reader ID
+                            readerName,                              // Reader Name
+                            issueDateStr,                            // Issue Date
+                            returnDateStr,                              // Due Date
+                            status                                   // Status
                     });
                 }
                 if (!found) {
@@ -701,7 +699,7 @@ public class ViewAllRecord extends JFrame {
 
     private void setIconImageSafe() {
         try {
-            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
         } catch (Exception ex) {
             LOGGER.fine("Unable to set window icon.");
         }

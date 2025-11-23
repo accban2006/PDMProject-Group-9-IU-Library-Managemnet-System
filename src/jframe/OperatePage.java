@@ -51,7 +51,7 @@ public class OperatePage extends JFrame {
 
     private int readerId;
     private String uname;
-    private String usertype;
+    private String userrole;
 
     private JTextField messNoField;
     private JTextArea messInfoArea;
@@ -68,10 +68,10 @@ public class OperatePage extends JFrame {
         this(0, null, null);
     }
 
-    public OperatePage(int id, String username, String utype) {
+    public OperatePage(int id, String username, String urole) {
         this.readerId = id;
         this.uname = username;
-        this.usertype = utype;
+        this.userrole = urole;
         initializeUi();
         Connect();
         SwingUtilities.invokeLater(() -> {
@@ -81,7 +81,7 @@ public class OperatePage extends JFrame {
                 loadHandledMessages();
             }
         });
-        
+
         // Auto-refresh handled messages every 5 seconds
         javax.swing.Timer refreshTimer = new javax.swing.Timer(5000, e -> {
             if (con != null) {
@@ -117,7 +117,7 @@ public class OperatePage extends JFrame {
         backButton.setForeground(Color.WHITE);
         backButton.setFocusPainted(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.addActionListener(e -> navigateTo(new HomePage(readerId, uname, usertype)));
+        backButton.addActionListener(e -> navigateTo(new HomePage(readerId, uname, userrole)));
 
         header.add(backButton, BorderLayout.WEST);
 
@@ -265,7 +265,7 @@ public class OperatePage extends JFrame {
 
         JPanel sentPanel = buildSentMessagesTable();
         sentPanel.setPreferredSize(new Dimension(0, 350));
-        
+
         JPanel handledPanel = buildHandledMessagesTable();
         handledPanel.setPreferredSize(new Dimension(0, 350));
 
@@ -338,11 +338,11 @@ public class OperatePage extends JFrame {
 
         JScrollPane scrollPane = new JScrollPane(handledTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        
+
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(buttonPanel, BorderLayout.NORTH);
         contentPanel.add(scrollPane, BorderLayout.CENTER);
-        
+
         tablePanel.add(contentPanel, BorderLayout.CENTER);
 
         return tablePanel;
@@ -394,7 +394,7 @@ public class OperatePage extends JFrame {
 
     private void updateUserContext() {
         String displayName = (uname == null || uname.trim().isEmpty()) ? "Guest" : uname;
-        String displayRole = (usertype == null || usertype.trim().isEmpty()) ? "Guest" : usertype;
+        String displayRole = (userrole == null || userrole.trim().isEmpty()) ? "Guest" : userrole;
         welcomeValueLabel.setText(displayName);
         roleValueLabel.setText(displayRole);
     }
@@ -405,7 +405,7 @@ public class OperatePage extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Database connection failed", ex);
             JOptionPane.showMessageDialog(this, "Unable to connect to database.", "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -464,10 +464,10 @@ public class OperatePage extends JFrame {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 while (rs.next()) {
                     messagesTableModel.addRow(new Object[]{
-                        rs.getInt("MessID"),
-                        rs.getInt("MessNo"),
-                        rs.getString("MessInfo"),
-                        "Sent" // We don't have a date field, so just show "Sent"
+                            rs.getInt("MessID"),
+                            rs.getInt("MessNo"),
+                            rs.getString("MessInfo"),
+                            "Sent" // We don't have a date field, so just show "Sent"
                     });
                 }
             }
@@ -486,10 +486,10 @@ public class OperatePage extends JFrame {
 
         // Join [operate].[Handle] with [operate].[Message] to get handled messages for this reader
         String sql = "select h.MessID, m.MessInfo, h.StaffID, h.ReceiveDate, h.Feedback " +
-                     "from [operate].[Handle] h " +
-                     "inner join [operate].[Message] m on h.MessID = m.MessID " +
-                     "where m.ReaderID = ? " +
-                     "order by h.ReceiveDate DESC";
+                "from [operate].[Handle] h " +
+                "inner join [operate].[Message] m on h.MessID = m.MessID " +
+                "where m.ReaderID = ? " +
+                "order by h.ReceiveDate DESC";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, readerId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -497,11 +497,11 @@ public class OperatePage extends JFrame {
                 while (rs.next()) {
                     java.sql.Date receiveDate = rs.getDate("ReceiveDate");
                     handledTableModel.addRow(new Object[]{
-                        rs.getInt("MessID"),
-                        rs.getString("MessInfo"),
-                        rs.getInt("StaffID"),
-                        receiveDate != null ? dateFormat.format(receiveDate) : "-",
-                        rs.getString("Feedback") != null ? rs.getString("Feedback") : "-"
+                            rs.getInt("MessID"),
+                            rs.getString("MessInfo"),
+                            rs.getInt("StaffID"),
+                            receiveDate != null ? dateFormat.format(receiveDate) : "-",
+                            rs.getString("Feedback") != null ? rs.getString("Feedback") : "-"
                     });
                 }
             }
@@ -553,7 +553,7 @@ public class OperatePage extends JFrame {
 
     private void setIconImageSafe() {
         try {
-            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
         } catch (Exception ex) {
             LOGGER.fine("Unable to set window icon.");
         }

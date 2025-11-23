@@ -93,6 +93,7 @@ CREATE TABLE loan.Loan (
 	[ISBN] VARCHAR(50) NOT NULL,
 	[BorrowDate] DATE NULL,
 	[ReturnDate] DATE NULL
+	[Status] VARCHAR(20) DEFAULT 'pending'
 );
 GO
 

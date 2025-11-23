@@ -54,7 +54,7 @@ public class StaffOperatePage extends JFrame {
 
     private int staffId;
     private String uname;
-    private String usertype;
+    private String userrole;
 
     private JTable messagesTable;
     private DefaultTableModel messagesTableModel;
@@ -76,10 +76,10 @@ public class StaffOperatePage extends JFrame {
         this(0, null, null);
     }
 
-    public StaffOperatePage(int id, String username, String utype) {
+    public StaffOperatePage(int id, String username, String urole) {
         this.staffId = id;
         this.uname = username;
-        this.usertype = utype;
+        this.userrole = urole;
         initializeUi();
         Connect();
         SwingUtilities.invokeLater(() -> {
@@ -117,7 +117,7 @@ public class StaffOperatePage extends JFrame {
         backButton.setForeground(Color.WHITE);
         backButton.setFocusPainted(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.addActionListener(e -> navigateTo(new HomePage(staffId, uname, usertype)));
+        backButton.addActionListener(e -> navigateTo(new HomePage(staffId, uname, userrole)));
 
         header.add(backButton, BorderLayout.WEST);
 
@@ -174,7 +174,7 @@ public class StaffOperatePage extends JFrame {
 
         JPanel messagesPanel = buildMessagesPanel();
         messagesPanel.setPreferredSize(new Dimension(700, 0)); // Make messages panel wider
-        
+
         JPanel reportsPanel = buildReportsPanel();
         reportsPanel.setPreferredSize(new Dimension(700, 0)); // Make reports panel wider
 
@@ -483,7 +483,7 @@ public class StaffOperatePage extends JFrame {
 
     private void updateUserContext() {
         String displayName = (uname == null || uname.trim().isEmpty()) ? "Guest" : uname;
-        String displayRole = (usertype == null || usertype.trim().isEmpty()) ? "Guest" : usertype;
+        String displayRole = (userrole == null || userrole.trim().isEmpty()) ? "Guest" : userrole;
         welcomeValueLabel.setText(displayName);
         roleValueLabel.setText(displayRole);
     }
@@ -494,7 +494,7 @@ public class StaffOperatePage extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Database connection failed", ex);
             JOptionPane.showMessageDialog(this, "Unable to connect to database.", "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -510,18 +510,18 @@ public class StaffOperatePage extends JFrame {
 
         // Get messages that haven't been handled by this staff yet
         String sql = "select m.MessID, m.MessNo, m.ReaderID, m.MessInfo " +
-                     "from [operate].[Message] m " +
-                     "where m.MessID NOT IN (select h.MessID from [operate].[Handle] h where h.StaffID = ?) " +
-                     "order by m.MessID DESC";
+                "from [operate].[Message] m " +
+                "where m.MessID NOT IN (select h.MessID from [operate].[Handle] h where h.StaffID = ?) " +
+                "order by m.MessID DESC";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, staffId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     messagesTableModel.addRow(new Object[]{
-                        rs.getInt("MessID"),
-                        rs.getInt("MessNo"),
-                        rs.getInt("ReaderID"),
-                        rs.getString("MessInfo")
+                            rs.getInt("MessID"),
+                            rs.getInt("MessNo"),
+                            rs.getInt("ReaderID"),
+                            rs.getString("MessInfo")
                     });
                 }
             }
@@ -544,10 +544,10 @@ public class StaffOperatePage extends JFrame {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     reportsTableModel.addRow(new Object[]{
-                        rs.getInt("ReportID"),
-                        rs.getInt("ReportNo"),
-                        rs.getString("Issue"),
-                        "Sent" // We don't have a date field, so just show "Sent"
+                            rs.getInt("ReportID"),
+                            rs.getInt("ReportNo"),
+                            rs.getString("Issue"),
+                            "Sent" // We don't have a date field, so just show "Sent"
                     });
                 }
             }
@@ -685,7 +685,7 @@ public class StaffOperatePage extends JFrame {
 
     private void setIconImageSafe() {
         try {
-            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
         } catch (Exception ex) {
             LOGGER.fine("Unable to set window icon.");
         }

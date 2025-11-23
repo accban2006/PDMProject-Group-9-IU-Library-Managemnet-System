@@ -83,8 +83,8 @@ GO
 -- =====================
 -- 9. Insert Loan
 -- =====================
-INSERT INTO loan.Loan (ReaderID, ISBN, BorrowDate, ReturnDate)
+INSERT INTO loan.Loan (ReaderID, ISBN, BorrowDate, ReturnDate, Status)
 VALUES
-(1, '978-1234567890', '2025-11-15', '2025-11-22'),
-(2, '978-0987654321', '2025-11-16', '2025-11-23');
+(1, '978-1234567890', '2025-11-15', '2025-11-22', 'pending'),
+(2, '978-0987654321', '2025-11-16', '2025-11-23', 'pending');
 GO

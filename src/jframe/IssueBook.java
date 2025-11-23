@@ -54,14 +54,12 @@ public class IssueBook extends JFrame {
 
     private int id;
     private String uname;
-    private String usertype;
+    private String userrole;
 
     private JTextField bookIdField;
     private JTextField readerIdField;
     private JLabel bookIdValueLabel;
     private JLabel bookNameValueLabel;
-    private JLabel bookAuthorValueLabel;
-    private JLabel bookQuantityValueLabel;
     private JLabel bookErrorLabel;
 
     private JLabel readerIdValueLabel;
@@ -69,7 +67,7 @@ public class IssueBook extends JFrame {
     private JLabel readerErrorLabel;
 
     private JSpinner issueDateSpinner;
-    private JSpinner dueDateSpinner;
+    private JSpinner ReturnDateSpinner;
     private JButton issueButton;
     private JButton clearButton;
     private JLabel roleValueLabel;
@@ -79,10 +77,10 @@ public class IssueBook extends JFrame {
         this(0, null, null);
     }
 
-    public IssueBook(int id, String username, String utype) {
+    public IssueBook(int id, String username, String urole) {
         this.id = id;
         this.uname = username;
-        this.usertype = utype;
+        this.userrole = urole;
         initializeUi();
         Connect();
         SwingUtilities.invokeLater(() -> {
@@ -118,7 +116,7 @@ public class IssueBook extends JFrame {
         backButton.setForeground(Color.WHITE);
         backButton.setFocusPainted(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, usertype)));
+        backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, userrole)));
 
         header.add(backButton, BorderLayout.WEST);
 
@@ -185,15 +183,11 @@ public class IssueBook extends JFrame {
 
         bookIdValueLabel = createValueLabel("-");
         bookNameValueLabel = createValueLabel("-");
-//        bookAuthorValueLabel = createValueLabel("-");
-//        bookQuantityValueLabel = createValueLabel("-");
 
         GridBagConstraints gbc = createGbc();
         JPanel body = (JPanel) card.getComponent(1);
         addRow(body, gbc, "Book ID (ISBN):", bookIdValueLabel);
         addRow(body, gbc, "Book Name:", bookNameValueLabel);
-//        addRow(body, gbc, "Author:", bookAuthorValueLabel);
-//        addRow(body, gbc, "Quantity:", bookQuantityValueLabel);
 
         bookErrorLabel = createErrorLabel();
         card.add(bookErrorLabel, BorderLayout.SOUTH);
@@ -206,15 +200,11 @@ public class IssueBook extends JFrame {
 
         readerIdValueLabel = createValueLabel("-");
         readerNameValueLabel = createValueLabel("-");
-//        courseValueLabel = createValueLabel("-");
-//        branchValueLabel = createValueLabel("-");
 
         GridBagConstraints gbc = createGbc();
         JPanel body = (JPanel) card.getComponent(1);
         addRow(body, gbc, "Reader ID:", readerIdValueLabel);
         addRow(body, gbc, "Reader Name:", readerNameValueLabel);
-//        addRow(body, gbc, "Course:", courseValueLabel);
-//        addRow(body, gbc, "Branch:", branchValueLabel);
 
         readerErrorLabel = createErrorLabel();
         card.add(readerErrorLabel, BorderLayout.SOUTH);
@@ -267,12 +257,12 @@ public class IssueBook extends JFrame {
         });
 
         issueDateSpinner = createDateSpinner(new Date());
-        dueDateSpinner = createDateSpinner(addDays(new Date(), 7));
+        ReturnDateSpinner = createDateSpinner(addDays(new Date(), 7));
 
         addLabeledField(form, gbc, "Book ID (ISBN)", bookIdField);
         addLabeledField(form, gbc, "Reader ID", readerIdField);
         addLabeledField(form, gbc, "Issue Date", issueDateSpinner);
-        addLabeledField(form, gbc, "Due Date", dueDateSpinner);
+        addLabeledField(form, gbc, "Due Date", ReturnDateSpinner);
 
         issueButton = new JButton("Issue Book");
         stylePrimaryButton(issueButton);
@@ -424,14 +414,14 @@ public class IssueBook extends JFrame {
     }
 
     private void applyRolePermissions() {
-        boolean canIssue = usertype != null && (usertype.equalsIgnoreCase("Staff"));
+        boolean canIssue = userrole != null && (userrole.equalsIgnoreCase("Staff"));
         issueButton.setEnabled(canIssue);
         clearButton.setEnabled(canIssue);
     }
 
     private void updateUserContext() {
         String displayName = (uname == null || uname.trim().isEmpty()) ? "Guest" : uname;
-        String displayRole = (usertype == null || usertype.trim().isEmpty()) ? "Guest" : usertype;
+        String displayRole = (userrole == null || userrole.trim().isEmpty()) ? "Guest" : userrole;
         welcomeValueLabel.setText(displayName);
         roleValueLabel.setText(displayRole);
     }
@@ -442,7 +432,7 @@ public class IssueBook extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=Daigia_minhphuc1511;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Database connection failed", ex);
             JOptionPane.showMessageDialog(this, "Unable to connect to database.", "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -456,12 +446,6 @@ public class IssueBook extends JFrame {
             return;
         }
 
-//        if (isbn.length() >= 13) {
-//            bookErrorLabel.setText("ISBN must be 13 characters or more.");
-//            clearBookDetails();
-//            return;
-//        }
-
         Connect();
         if (con == null) {
             return;
@@ -470,13 +454,11 @@ public class IssueBook extends JFrame {
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, isbn);
             try (ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
+                if (rs.next()) {
                     bookIdValueLabel.setText(rs.getString("ISBN"));
                     bookNameValueLabel.setText(rs.getString("title"));
-//                    bookAuthorValueLabel.setText(rs.getString("author"));
-//                    bookQuantityValueLabel.setText(rs.getString("quantity"));
                     bookErrorLabel.setText(" ");
-            } else {
+                } else {
                     bookErrorLabel.setText("Book ISBN not found.");
                     clearBookDetails();
                 }
@@ -491,7 +473,7 @@ public class IssueBook extends JFrame {
     private void fetchReaderDetails() {
         String text = readerIdField.getText().trim();
         if (text.isEmpty()) {
-            clearStudentDetails();
+            clearReaderDetails();
             return;
         }
 
@@ -500,7 +482,7 @@ public class IssueBook extends JFrame {
             readerId = Integer.parseInt(text);
         } catch (NumberFormatException ex) {
             readerErrorLabel.setText("Reader ID must be numeric.");
-            clearStudentDetails();
+            clearReaderDetails();
             return;
         }
 
@@ -549,13 +531,13 @@ public class IssueBook extends JFrame {
 
                 } else {
                     readerErrorLabel.setText("Reader ID not found.");
-                    clearStudentDetails();
+                    clearReaderDetails();
                 }
             }
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to load reader details", ex);
             readerErrorLabel.setText("Error loading reader details.");
-            clearStudentDetails();
+            clearReaderDetails();
         }
     }
 
@@ -579,7 +561,7 @@ public class IssueBook extends JFrame {
         }
 
         // Check if there's an active loan (where ReturnDate is NULL or in the future)
-        String sql = "select * from [loan].[Loan] where ISBN = ? and ReaderID = ? and (DueDate IS NULL OR DueDate >= CURDATE())";
+        String sql = "select * from [loan].[Loan] where ISBN = ? and ReaderID = ? and (ReturnDate IS NULL OR ReturnDate >= CURDATE())";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, isbn);
             stmt.setInt(2, readerId);
@@ -612,7 +594,7 @@ public class IssueBook extends JFrame {
         }
 
         Date issueDate = (Date) issueDateSpinner.getValue();
-        Date returnDate = (Date) dueDateSpinner.getValue();
+        Date returnDate = (Date) ReturnDateSpinner.getValue();
         if (returnDate.before(issueDate)) {
             JOptionPane.showMessageDialog(this, "Return date cannot be earlier than issue date.");
             return;
@@ -641,9 +623,8 @@ public class IssueBook extends JFrame {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String borrowDateString = df.format(issueDate);
         String returnDateString = df.format(returnDate);
-        
-        // Fix SQL: use BorrowDate and ReturnDate (not DueDate), remove extra commas
-        String sql = "insert into [loan].[Loan](ISBN, ReaderID, BorrowDate, DueDate) values (?, ?, ?, ?)";
+
+        String sql = "insert into [loan].[Loan](ISBN, ReaderID, BorrowDate, ReturnDate) values (?, ?, ?, ?)";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, isbn);
             stmt.setInt(2, readerId);
@@ -651,7 +632,6 @@ public class IssueBook extends JFrame {
             stmt.setString(4, returnDateString);
             stmt.executeUpdate();
             JOptionPane.showMessageDialog(this, "Book issued successfully.");
-//            updateBookCount();
             clearForm();
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to issue book", ex);
@@ -659,47 +639,15 @@ public class IssueBook extends JFrame {
         }
     }
 
-//    public void updateBookCount() {
-//        String bookIdText = bookIdField.getText().trim();
-//        if (bookIdText.isEmpty()) {
-//            return;
-//        }
-//
-//        int bookId;
-//        try {
-//            bookId = Integer.parseInt(bookIdText);
-//        } catch (NumberFormatException ex) {
-//            return;
-//        }
-//
-//        Connect();
-//        if (con == null) {
-//            return;
-//        }
-//
-//        String sql = "update book_details set quantity = quantity - 1 where book_id = ? and quantity > 0";
-//        try (PreparedStatement stmt = con.prepareStatement(sql)) {
-//            stmt.setInt(1, bookId);
-//            int updated = stmt.executeUpdate();
-//            if (updated > 0) {
-//                fetchBookDetails();
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Unable to decrement quantity (already zero).");
-//            }
-//        } catch (SQLException ex) {
-//            LOGGER.log(Level.SEVERE, "Failed to update book count", ex);
-//        }
-//    }
-
     private void clearForm() {
         bookIdField.setText("");
         readerIdField.setText("");
 
         issueDateSpinner.setValue(new Date());
-        dueDateSpinner.setValue(addDays(new Date(), 7));
+        ReturnDateSpinner.setValue(addDays(new Date(), 7));
 
         clearBookDetails();
-        clearStudentDetails();
+        clearReaderDetails();
         bookErrorLabel.setText(" ");
         readerErrorLabel.setText(" ");
         bookIdField.requestFocusInWindow();
@@ -708,15 +656,11 @@ public class IssueBook extends JFrame {
     private void clearBookDetails() {
         bookIdValueLabel.setText("-");
         bookNameValueLabel.setText("-");
-//        bookAuthorValueLabel.setText("-");
-//        bookQuantityValueLabel.setText("0");
     }
 
-    private void clearStudentDetails() {
+    private void clearReaderDetails() {
         readerIdValueLabel.setText("-");
         readerNameValueLabel.setText("-");
-//        courseValueLabel.setText("-");
-//        branchValueLabel.setText("-");
     }
 
     private void navigateTo(JFrame frame) {
@@ -742,7 +686,7 @@ public class IssueBook extends JFrame {
 
     private void setIconImageSafe() {
         try {
-            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
         } catch (Exception ex) {
             LOGGER.fine("Unable to set window icon.");
         }

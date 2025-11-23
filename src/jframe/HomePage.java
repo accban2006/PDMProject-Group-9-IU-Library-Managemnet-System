@@ -22,7 +22,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -53,18 +52,11 @@ public class HomePage extends JFrame {
     private String displayName;
     private String userrole;
 
-    private JTable jTable1;
     private JTable jTable2;
-    private DefaultTableModel studentTableModel;
     private DefaultTableModel bookTableModel;
 
-    private JLabel lbl_noOfBooks;
-    private JLabel lbl_noOfStudents;
-    private JLabel lbl_noOfIssuedBooks;
-    private JLabel lbl_noOfDefaulters;
-    private JPanel panelPieChart;
     private JLabel welcomeValueLabel;
-    private JLabel userTypeValueLabel;
+    private JLabel userRoleValueLabel;
     private JPanel navigationPanel;
 
 
@@ -74,7 +66,6 @@ public class HomePage extends JFrame {
         if (con != null) {
             refreshData();
         }
-//        updateUserContext();
     }
 
     public HomePage(int id, String displayName, String urole) {
@@ -132,9 +123,9 @@ public class HomePage extends JFrame {
         roleLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
         roleLabel.setForeground(Color.WHITE);
 
-        userTypeValueLabel = new JLabel("Guest");
-        userTypeValueLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
-        userTypeValueLabel.setForeground(Color.WHITE);
+        userRoleValueLabel = new JLabel("Guest");
+        userRoleValueLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
+        userRoleValueLabel.setForeground(Color.WHITE);
 
         JButton exitButton = new JButton("Exit");
         exitButton.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -149,7 +140,7 @@ public class HomePage extends JFrame {
         right.add(welcomeValueLabel);
         right.add(Box.createHorizontalStrut(16));
         right.add(roleLabel);
-        right.add(userTypeValueLabel);
+        right.add(userRoleValueLabel);
         right.add(Box.createHorizontalStrut(16));
         right.add(exitButton);
 
@@ -181,7 +172,7 @@ public class HomePage extends JFrame {
             nav.add(createNavButton("Manage Books", this::openManageBooks));
             nav.add(Box.createVerticalStrut(12));
 
-            nav.add(createNavButton("Manage Reader", this::openManageStudents));
+            nav.add(createNavButton("Manage Reader", this::openManageReaders));
             nav.add(Box.createVerticalStrut(12));
 
             nav.add(createNavButton("Issue Book", this::openIssueBook));
@@ -223,29 +214,7 @@ public class HomePage extends JFrame {
         statsConstraints.fill = GridBagConstraints.BOTH;
         statsConstraints.weighty = 1.0;
 
-        lbl_noOfBooks = createStatLabel();
-        lbl_noOfStudents = createStatLabel();
-        lbl_noOfIssuedBooks = createStatLabel();
-        lbl_noOfDefaulters = createStatLabel();
-
-//        statsConstraints.gridx = 0;
-//        statsConstraints.weightx = 0.25;
-//        statsPanel.add(createStatCard("No. Of Books", lbl_noOfBooks, new Color(0, 123, 255)), statsConstraints);
-//        statsConstraints.gridx = 1;
-//        statsPanel.add(createStatCard("No. Of Students", lbl_noOfStudents, new Color(40, 167, 69)), statsConstraints);
-//        statsConstraints.gridx = 2;
-//        statsPanel.add(createStatCard("Issued Books", lbl_noOfIssuedBooks, new Color(255, 193, 7)), statsConstraints);
-//        statsConstraints.gridx = 3;
-//        statsConstraints.insets = new Insets(0, 0, 0, 0);
-//        statsPanel.add(createStatCard("Defaulters", lbl_noOfDefaulters, new Color(220, 53, 69)), statsConstraints);
-//
-//        content.add(statsPanel, BorderLayout.NORTH);
-
-//        studentTableModel = createStudentTableModel();
         bookTableModel = createBookTableModel();
-
-//        jTable1 = new JTable(studentTableModel);
-//        configureTable(jTable1);
 
         jTable2 = new JTable(bookTableModel);
         configureTable(jTable2);
@@ -253,16 +222,9 @@ public class HomePage extends JFrame {
         JPanel tablesPanel = new JPanel();
         tablesPanel.setOpaque(false);
         tablesPanel.setLayout(new BoxLayout(tablesPanel, BoxLayout.Y_AXIS));
-//        tablesPanel.add(createTableSection("Student Details", jTable1));
         tablesPanel.add(Box.createVerticalStrut(16));
         tablesPanel.add(createTableSection("Book Details", jTable2));
 
-//        panelPieChart = new JPanel(new BorderLayout());
-//        panelPieChart.setPreferredSize(new Dimension(420, 0));
-//        panelPieChart.setBackground(Color.WHITE);
-//        panelPieChart.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)), "Issued Book details"));
-//        panelPieChart.add(new JLabel("No data available", SwingConstants.CENTER), BorderLayout.CENTER);
-//
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setOpaque(false);
         GridBagConstraints centerConstraints = new GridBagConstraints();
@@ -277,7 +239,6 @@ public class HomePage extends JFrame {
         centerConstraints.gridx = 1;
         centerConstraints.weightx = 0.4;
         centerConstraints.insets = new Insets(0, 0, 0, 0);
-//        centerPanel.add(panelPieChart, centerConstraints);
 
         content.add(centerPanel, BorderLayout.CENTER);
 
@@ -328,25 +289,6 @@ public class HomePage extends JFrame {
         return label;
     }
 
-    private JPanel createStatCard(String title, JLabel valueLabel, Color accentColor) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(4, 0, 0, 0, accentColor),
-                BorderFactory.createEmptyBorder(16, 16, 16, 16)
-        ));
-
-        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
-        titleLabel.setForeground(new Color(70, 70, 70));
-
-        valueLabel.setBackground(Color.WHITE);
-
-        card.add(titleLabel, BorderLayout.NORTH);
-        card.add(valueLabel, BorderLayout.CENTER);
-        return card;
-    }
-
     private JPanel createTableSection(String title, JTable table) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
@@ -365,15 +307,6 @@ public class HomePage extends JFrame {
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
     }
-
-//    private DefaultTableModel createStudentTableModel() {
-//        return new DefaultTableModel(new Object[]{"Student ID", "Student Name", "Course", "Branch"}, 0) {
-//            @Override
-//            public boolean isCellEditable(int row, int column) {
-//                return false;
-//            }
-//        };
-//    }
 
     private DefaultTableModel createBookTableModel() {
         return new DefaultTableModel(new Object[]{"ISBN", "Title", "Genre", "Edition", "Plot", "Rating", "PublisherName", "YearOfPublication"}, 0) {
@@ -421,7 +354,7 @@ public class HomePage extends JFrame {
 
         // Update header labels
         welcomeValueLabel.setText(displayName != null ? displayName : "Guest");
-        userTypeValueLabel.setText(userrole != null ? userrole : "Guest");
+        userRoleValueLabel.setText(userrole != null ? userrole : "Guest");
 
         // REBUILD NAVIGATION
         navigationPanel.removeAll();
@@ -444,7 +377,7 @@ public class HomePage extends JFrame {
         navigateTo(new ManageBooks(id, displayName, userrole));
     }
 
-    private void openManageStudents() {
+    private void openManageReaders() {
         navigateTo(new ManageReader(id, displayName, userrole));
     }
 
@@ -478,7 +411,7 @@ public class HomePage extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=itcsiu24070;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to connect to database", ex);
             JOptionPane.showMessageDialog(this, "Unable to connect to database.", "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -487,12 +420,6 @@ public class HomePage extends JFrame {
 
     private void refreshData() {
         Book_Load();
-//        Student_Load();
-//        countStudentDetails();
-//        countBookDetails();
-//        countIssueBookDetails();
-//        countDefaultersDetails();
-//        showPieChart();
     }
 
     public void Book_Load() {
@@ -520,132 +447,9 @@ public class HomePage extends JFrame {
         }
     }
 
-//    public void Student_Load() {
-//        if (con == null) {
-//            return;
-//        }
-//        studentTableModel.setRowCount(0);
-//        String sql = "select student_id, student_name, course, branch from student_details";
-//        try (PreparedStatement statement = con.prepareStatement(sql);
-//             ResultSet resultSet = statement.executeQuery()) {
-//            while (resultSet.next()) {
-//                studentTableModel.addRow(new Object[]{
-//                        resultSet.getString("student_id"),
-//                        resultSet.getString("student_name"),
-//                        resultSet.getString("course"),
-//                        resultSet.getString("branch")
-//                });
-//            }
-//        } catch (SQLException ex) {
-//            LOGGER.log(Level.SEVERE, "Failed to load students", ex);
-//        }
-//    }
-
-    public void countBookDetails() {
-        if (con == null) {
-            return;
-        }
-        String sql = "select count(*) from [lib].[Book]";
-        try (PreparedStatement statement = con.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            if (resultSet.next()) {
-                lbl_noOfBooks.setText(String.valueOf(resultSet.getInt(1)));
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.WARNING, "Failed to count books", ex);
-        }
-    }
-
-    public void countStudentDetails() {
-        if (con == null) {
-            return;
-        }
-        String sql = "select count(*) from student_details";
-        try (PreparedStatement statement = con.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            if (resultSet.next()) {
-                lbl_noOfStudents.setText(String.valueOf(resultSet.getInt(1)));
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.WARNING, "Failed to count students", ex);
-        }
-    }
-
-    public void countIssueBookDetails() {
-        if (con == null) {
-            return;
-        }
-        String sql = "select count(*) from issue_book_details where status = ?";
-        try (PreparedStatement statement = con.prepareStatement(sql)) {
-            statement.setString(1, "pending");
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    lbl_noOfIssuedBooks.setText(String.valueOf(resultSet.getInt(1)));
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.WARNING, "Failed to count issued books", ex);
-        }
-    }
-
-    public void countDefaultersDetails() {
-        if (con == null) {
-            return;
-        }
-        long now = System.currentTimeMillis();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-        String todayDate = df.format(now);
-        String sql = "select count(*) from issue_book_details where due_date < ?";
-        try (PreparedStatement statement = con.prepareStatement(sql)) {
-            statement.setString(1, todayDate);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    lbl_noOfDefaulters.setText(String.valueOf(resultSet.getInt(1)));
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.WARNING, "Failed to count defaulters", ex);
-        }
-    }
-
-    public void showPieChart() {
-        if (con == null) {
-            return;
-        }
-
-        DefaultTableModel chartModel = new DefaultTableModel(new Object[]{"Book Name", "Issue Count"}, 0);
-        String sql = "select book_name, count(*) as issue_count from issue_book_details group by book_name";
-        try (PreparedStatement statement = con.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
-            while (resultSet.next()) {
-                chartModel.addRow(new Object[]{
-                    resultSet.getString("book_name"),
-                    resultSet.getInt("issue_count")
-                });
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.WARNING, "Failed to build chart data", ex);
-        }
-
-        JTable chartTable = new JTable(chartModel);
-        chartTable.setFont(new Font("Tahoma", Font.PLAIN, 12));
-        chartTable.setRowHeight(25);
-        chartTable.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 12));
-        chartTable.setFillsViewportHeight(true);
-        chartTable.setEnabled(false);
-
-        JScrollPane scrollPane = new JScrollPane(chartTable);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-        panelPieChart.removeAll();
-        panelPieChart.add(scrollPane, BorderLayout.CENTER);
-        panelPieChart.revalidate();
-        panelPieChart.repaint();
-    }
-
     private void setIconImageSafe() {
         try {
-            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
         } catch (Exception ignored) {
             LOGGER.fine("Unable to set window icon.");
         }

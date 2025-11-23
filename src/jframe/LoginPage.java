@@ -59,7 +59,7 @@ public class LoginPage extends javax.swing.JFrame {
 
     // Set Icon method
     private void setIconImage() {
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
 
     }
 
@@ -72,7 +72,7 @@ public class LoginPage extends javax.swing.JFrame {
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (SQLException | ClassNotFoundException ex) {
             Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -112,41 +112,41 @@ public class LoginPage extends javax.swing.JFrame {
         String utype = userTypeCombo.getSelectedItem().toString();
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://Duyentran:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
-pst = con.prepareStatement("select * from [auth].[Authentication] " +
-"where Username=? and Password=? and Role=?");
-pst.setString(1, name);
-pst.setString(2, pwd);
-pst.setString(3, utype);
-rs = pst.executeQuery();
-//Fix next
-if (rs.next()) {
-    int id = -1; // Initialize id to a safe default value
-    String fetchedUtype = rs.getString("Displayname"); // Assuming 'Displayname' 
-    // holds the role/type info
-    // 1. Check if ReaderID is present (i.e., StaffID is NULL)
-    if (rs.getObject("ReaderID") != null) {
-        id = rs.getInt("ReaderID");
+            con = DriverManager.getConnection("jdbc:sqlserver://LAPTOP-7M0AV8S0:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=T!24065n3A44;trustServerCertificate=true");
+            pst = con.prepareStatement("select * from [auth].[Authentication] " +
+                    "where Username=? and Password=? and Role=?");
+            pst.setString(1, name);
+            pst.setString(2, pwd);
+            pst.setString(3, utype);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                int id = -1; //initialize id to a safe default value
+                String fetchedUtype = rs.getString("Displayname"); //assuming 'Displayname'
+                //holds the role/type info
+                //check if ReaderID is present (i.e., StaffID is NULL)
+                if (rs.getObject("ReaderID") != null) {
+                    id = rs.getInt("ReaderID");
+                }
+                // 2. Check if StaffID is present (i.e., ReaderID is NULL)
+                else if (rs.getObject("StaffID") != null) {
+                    id = rs.getInt("StaffID");
+                }
+                // Check if a valid ID was found
+                if (id != -1) {
+                    JOptionPane.showMessageDialog(this, "Login successful!");
+                    // Pass the generic ID (which holds either ReaderID or StaffID), username,
+                    // and user type/role
+                    new HomePage(id, name, utype).setVisible(true);
+                    this.dispose();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Incorrect username or password");
+            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-    // 2. Check if StaffID is present (i.e., ReaderID is NULL)
-    else if (rs.getObject("StaffID") != null) {
-        id = rs.getInt("StaffID");
-    }
-    // Check if a valid ID was found
-    if (id != -1) {
-        JOptionPane.showMessageDialog(this, "Login successful!");
-        // Pass the generic ID (which holds either ReaderID or StaffID), username, 
-        // and user type/role
-        new HomePage(id, name, utype).setVisible(true);
-        this.dispose();
-    }
-} else {
-    JOptionPane.showMessageDialog(this, "Incorrect username or password");
-}
-} catch (SQLException | ClassNotFoundException ex) {
-    Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-}
-}
 
     private void initComponents() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);

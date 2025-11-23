@@ -46,7 +46,7 @@ public class SignUpPage extends javax.swing.JFrame {
     private Connection con;
     private int id;
     private String uname;
-    private String usertype;
+    private String userrole;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -67,19 +67,19 @@ public class SignUpPage extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> usernameField.requestFocusInWindow());
     }
 
-    public SignUpPage(int id, String username, String utype) {
+    public SignUpPage(int id, String username, String urole) {
         this();
         this.id = id;
         this.uname = username;
-        this.usertype = utype;
-        if (utype != null && !utype.trim().isEmpty()) {
-            roleHeaderLabel.setText(utype);
-            roleCombo.setSelectedItem(utype);
+        this.userrole = urole;
+        if (urole != null && !urole.trim().isEmpty()) {
+            roleHeaderLabel.setText(urole);
+            roleCombo.setSelectedItem(urole);
         }
     }
 
     private void setIconImage() {
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
     }
 
     public final void Connect() {
@@ -88,7 +88,7 @@ public class SignUpPage extends javax.swing.JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (SQLException | ClassNotFoundException ex) {
             LOGGER.log(Level.SEVERE, "Failed to connect to database", ex);
         }
@@ -193,7 +193,7 @@ public class SignUpPage extends javax.swing.JFrame {
         }
 
         if (role == null || "Select".equalsIgnoreCase(role)) {
-            JOptionPane.showMessageDialog(this, "please select a user type");
+            JOptionPane.showMessageDialog(this, "please select a user role");
             return false;
         }
 
@@ -278,7 +278,7 @@ public class SignUpPage extends javax.swing.JFrame {
         readerIdField.setText("");
         staffIdField.setText("");
         roleCombo.setSelectedIndex(0);
-        updateUserTypeHeader();
+        updateUserRoleHeader();
         updateIdFieldVisibility();
         usernameField.requestFocusInWindow();
     }
@@ -325,13 +325,13 @@ public class SignUpPage extends javax.swing.JFrame {
     }
 
     private void navigateBackToHome() {
-        if (usertype != null && uname != null) {
-            new HomePage(id, uname, usertype).setVisible(true);
+        if (userrole != null && uname != null) {
+            new HomePage(id, uname, userrole).setVisible(true);
         }
         dispose();
     }
 
-    private void updateUserTypeHeader() {
+    private void updateUserRoleHeader() {
         String selection = (String) roleCombo.getSelectedItem();
         if (selection == null || "Select".equalsIgnoreCase(selection)) {
             roleHeaderLabel.setText("User");
@@ -502,10 +502,10 @@ public class SignUpPage extends javax.swing.JFrame {
         formPanel.add(displayeNameField, gbc);
 
         gbc.gridy++;
-        JLabel userTypeLabel = new JLabel("User Role");
-        userTypeLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
-        userTypeLabel.setForeground(Color.WHITE);
-        formPanel.add(userTypeLabel, gbc);
+        JLabel userRoleLabel = new JLabel("User Role");
+        userRoleLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
+        userRoleLabel.setForeground(Color.WHITE);
+        formPanel.add(userRoleLabel, gbc);
 
         gbc.gridy++;
         roleCombo = new JComboBox<>(new String[]{"Select", "Reader", "Staff"});
@@ -515,7 +515,7 @@ public class SignUpPage extends javax.swing.JFrame {
         roleCombo.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         roleCombo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         roleCombo.addActionListener(e -> {
-            updateUserTypeHeader();
+            updateUserRoleHeader();
             updateIdFieldVisibility();
         });
         formPanel.add(roleCombo, gbc);

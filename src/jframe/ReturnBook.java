@@ -1,14 +1,6 @@
 package jframe;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,7 +38,7 @@ public class ReturnBook extends JFrame {
 
     private int id;
     private String uname;
-    private String usertype;
+    private String userrole;
 
     private JTextField bookIdField;
     private JTextField readerIdField;
@@ -69,10 +61,10 @@ public class ReturnBook extends JFrame {
         this(0, null, null);
     }
 
-    public ReturnBook(int id, String username, String utype) {
+    public ReturnBook(int id, String username, String urole) {
         this.id = id;
         this.uname = username;
-        this.usertype = utype;
+        this.userrole = urole;
         initializeUi();
         Connect();
         SwingUtilities.invokeLater(() -> {
@@ -87,7 +79,7 @@ public class ReturnBook extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(1100, 720));
-//        setIconImageSafe();
+        setIconImageSafe();
 
         add(buildHeader(), BorderLayout.NORTH);
         add(buildMainContent(), BorderLayout.CENTER);
@@ -108,7 +100,7 @@ public class ReturnBook extends JFrame {
         backButton.setForeground(Color.WHITE);
         backButton.setFocusPainted(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, usertype)));
+        backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, userrole)));
 
         header.add(backButton, BorderLayout.WEST);
 
@@ -167,26 +159,6 @@ public class ReturnBook extends JFrame {
         content.add(buildReturnFormCard(), BorderLayout.EAST);
 
         return content;
-    }
-
-    private JPanel buildImagePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel.setPreferredSize(new Dimension(400, 0));
-
-        try {
-            JLabel imageLabel = new JLabel(new javax.swing.ImageIcon(getClass().getResource("/icons/Return book.png")));
-            imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            panel.add(imageLabel, BorderLayout.CENTER);
-        } catch (Exception ex) {
-            JLabel placeholder = new JLabel("Return Book", SwingConstants.CENTER);
-            placeholder.setFont(new Font("Tahoma", Font.BOLD, 24));
-            placeholder.setForeground(new Color(150, 150, 150));
-            panel.add(placeholder, BorderLayout.CENTER);
-        }
-
-        return panel;
     }
 
     private JPanel buildBookDetailsCard() {
@@ -400,14 +372,14 @@ public class ReturnBook extends JFrame {
     }
 
     private void applyRolePermissions() {
-        boolean canReturn = usertype != null && (usertype.equalsIgnoreCase("Staff"));
+        boolean canReturn = userrole != null && (userrole.equalsIgnoreCase("Staff"));
         findButton.setEnabled(true);
         returnButton.setEnabled(canReturn);
     }
 
     private void updateUserContext() {
         String displayName = (uname == null || uname.trim().isEmpty()) ? "Guest" : uname;
-        String displayRole = (usertype == null || usertype.trim().isEmpty()) ? "Guest" : usertype;
+        String displayRole = (userrole == null || userrole.trim().isEmpty()) ? "Guest" : userrole;
         welcomeValueLabel.setText(displayName);
         roleValueLabel.setText(displayRole);
     }
@@ -418,10 +390,18 @@ public class ReturnBook extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Database connection failed", ex);
             JOptionPane.showMessageDialog(this, "Unable to connect to database.", "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void setIconImageSafe() {
+        try {
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
+        } catch (Exception ex) {
+            LOGGER.fine("Unable to set window icon.");
         }
     }
 
@@ -458,12 +438,12 @@ public class ReturnBook extends JFrame {
 
         // Join with [auth].[Reader] to get reader name and [lib].[Book] to get book title
         String sql = "select l.ReaderID, l.ISBN, l.BorrowDate, l.DueDate, " +
-                     "r.FirstName, r.MiddleName, r.LastName, " +
-                     "b.title " +
-                     "from [loan].[Loan] l " +
-                     "inner join [auth].[Reader] r on l.ReaderID = r.ReaderID " +
-                     "inner join [lib].[Book] b on l.ISBN = b.ISBN " +
-                     "where l.ISBN = ? and l.ReaderID = ? and (l.Status = 'pending' OR l.DueDate IS NULL)";
+                "r.FirstName, r.MiddleName, r.LastName, " +
+                "b.title " +
+                "from [loan].[Loan] l " +
+                "inner join [auth].[Reader] r on l.ReaderID = r.ReaderID " +
+                "inner join [lib].[Book] b on l.ISBN = b.ISBN " +
+                "where l.ISBN = ? and l.ReaderID = ? and (l.Status = 'pending' OR l.DueDate IS NULL)";
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setString(1, isbn);
             stmt.setInt(2, readerId);
@@ -473,7 +453,7 @@ public class ReturnBook extends JFrame {
                     String fname = rs.getString("FirstName");
                     String mname = rs.getString("MiddleName");
                     String lname = rs.getString("LastName");
-                    
+
                     StringBuilder fullName = new StringBuilder();
                     if (fname != null && !fname.isEmpty()) {
                         fullName.append(fname);
@@ -494,9 +474,9 @@ public class ReturnBook extends JFrame {
                     // Format dates
                     java.sql.Date borrowDate = rs.getDate("BorrowDate");
                     java.sql.Date dueDate = rs.getDate("DueDate");
-                    
+
                     java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
-                    
+
                     // Set UI labels
                     issueIdValueLabel.setText("-"); // No separate issue ID in this schema
                     bookIdValueLabel.setText(rs.getString("ISBN"));
@@ -560,42 +540,9 @@ public class ReturnBook extends JFrame {
         }
     }
 
-//    public void updateBookCount() {
-//        String bookIdText = bookIdField.getText().trim();
-//        if (bookIdText.isEmpty()) {
-//            return;
-//        }
-//
-//        int bookId;
-//        try {
-//            bookId = Integer.parseInt(bookIdText);
-//        } catch (NumberFormatException ex) {
-//            return;
-//        }
-//
-//        Connect();
-//        if (con == null) {
-//            return;
-//        }
-//
-//        String sql = "update book_details set quantity = quantity + 1 where book_id = ?";
-//        try (PreparedStatement stmt = con.prepareStatement(sql)) {
-//            stmt.setInt(1, bookId);
-//            int updated = stmt.executeUpdate();
-//            if (updated > 0) {
-//                JOptionPane.showMessageDialog(this, "Book count updated successfully.");
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Error updating book count.");
-//            }
-//        } catch (SQLException ex) {
-//            LOGGER.log(Level.SEVERE, "Failed to update book count", ex);
-//        }
-//    }
-
     private void processReturn() {
         if (returnBook()) {
             JOptionPane.showMessageDialog(this, "Book returned successfully!");
-//            updateBookCount();
             clearForm();
         } else {
             JOptionPane.showMessageDialog(this, "Book return failed. Please check the details and try again.");
@@ -653,14 +600,6 @@ public class ReturnBook extends JFrame {
             JOptionPane.showMessageDialog(this, "Failed to open link.");
         }
     }
-
-//    private void setIconImageSafe() {
-//        try {
-//            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
-//        } catch (Exception ex) {
-//            LOGGER.fine("Unable to set window icon.");
-//        }
-//    }
 
     public static void main(String[] args) {
         try {

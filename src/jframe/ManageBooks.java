@@ -64,7 +64,6 @@ public class ManageBooks extends JFrame {
     private JButton clearButton;
     private JTable booksTable;
     private DefaultTableModel tableModel;
-    private JPanel chartPanel;
     private JLabel roleValueLabel;
     private JLabel welcomeValueLabel;
 
@@ -72,10 +71,10 @@ public class ManageBooks extends JFrame {
         this(0, null, null);
     }
 
-    public ManageBooks(int id, String username, String utype) {
+    public ManageBooks(int id, String username, String urole) {
         this.id = id;
         this.uname = username;
-        this.userrole = utype;
+        this.userrole = urole;
         initializeUi();
         Connect();
         SwingUtilities.invokeLater(() -> {
@@ -83,7 +82,6 @@ public class ManageBooks extends JFrame {
             applyRolePermissions();
             if (con != null) {
                 loadBooks();
-//                showChart();
             }
         });
     }
@@ -117,19 +115,6 @@ public class ManageBooks extends JFrame {
         backButton.addActionListener(e -> navigateTo(new HomePage(id, uname, userrole)));
 
         header.add(backButton, BorderLayout.WEST);
-
-//        JButton aboutButton = new JButton("About Project");
-//        aboutButton.setFont(new Font("Tahoma", Font.BOLD, 14));
-//        aboutButton.setBackground(ERROR_COLOR);
-//        aboutButton.setForeground(Color.WHITE);
-//        aboutButton.setFocusPainted(false);
-//        aboutButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        aboutButton.addActionListener(e -> navigateTo(new AboutPage()));
-
-//        JPanel centerPanel = new JPanel();
-//        centerPanel.setOpaque(false);
-//        centerPanel.add(aboutButton);
-//        header.add(centerPanel, BorderLayout.CENTER);
 
         JPanel userPanel = new JPanel();
         userPanel.setOpaque(false);
@@ -376,8 +361,6 @@ public class ManageBooks extends JFrame {
         panel.setOpaque(false);
 
         panel.add(buildTablePanel(), BorderLayout.CENTER);
-//        panel.add(buildChartPanel(), BorderLayout.SOUTH);
-
         return panel;
     }
 
@@ -417,19 +400,6 @@ public class ManageBooks extends JFrame {
 
         return tablePanel;
     }
-
-//    private JPanel buildChartPanel() {
-//        chartPanel = new JPanel(new BorderLayout());
-//        chartPanel.setBackground(Color.WHITE);
-//        chartPanel.setBorder(BorderFactory.createTitledBorder(
-//                BorderFactory.createLineBorder(new Color(200, 200, 200)),
-//                "Available Book Statistics"
-//        ));
-//        chartPanel.setPreferredSize(new Dimension(0, 250));
-//        chartPanel.add(new JLabel("No data available", SwingConstants.CENTER), BorderLayout.CENTER);
-//
-//        return chartPanel;
-//    }
 
     private JPanel buildFooter() {
         JPanel footer = new JPanel(new BorderLayout());
@@ -495,7 +465,7 @@ public class ManageBooks extends JFrame {
                 return;
             }
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            con = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=LibraryManagementSystemGroup9;user=sa;password=;trustServerCertificate=true");
+            con = DriverManager.getConnection("jdbc:sqlserver://YOUR_SERVER_NAME:1433;databaseName=YOUR_DB_NAME;user=YOUR_USERNAME;password=YOUR_PASSWORD;trustServerCertificate=true");
         } catch (ClassNotFoundException | SQLException ex) {
             LOGGER.log(Level.SEVERE, "Database connection failed", ex);
             JOptionPane.showMessageDialog(this, "Unable to connect to database.", "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -603,7 +573,6 @@ public class ManageBooks extends JFrame {
             JOptionPane.showMessageDialog(this, "Book added successfully!");
             clearFields();
             loadBooks();
-//            showChart();
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to add book", ex);
             JOptionPane.showMessageDialog(this, "Failed to add book.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -648,7 +617,6 @@ public class ManageBooks extends JFrame {
             JOptionPane.showMessageDialog(this, "Book updated successfully!");
             clearFields();
             loadBooks();
-//            showChart();
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to update book", ex);
             JOptionPane.showMessageDialog(this, "Failed to update book.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -679,7 +647,6 @@ public class ManageBooks extends JFrame {
             JOptionPane.showMessageDialog(this, "Book deleted successfully!");
             clearFields();
             loadBooks();
-//            showChart();
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Failed to delete book", ex);
             JOptionPane.showMessageDialog(this, "Failed to delete book.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -708,41 +675,6 @@ public class ManageBooks extends JFrame {
         txtEdition.setText((String) tableModel.getValueAt(selectedRow, 3));
         addButton.setEnabled(false);
     }
-
-//    public void showChart() {
-//        if (con == null) {
-//            return;
-//        }
-//
-//        DefaultTableModel chartModel = new DefaultTableModel(new Object[]{"Book Name", "Quantity"}, 0);
-//        String sql = "select book_name, quantity from book_details";
-//        try (PreparedStatement stmt = con.prepareStatement(sql);
-//             ResultSet rs = stmt.executeQuery()) {
-//            while (rs.next()) {
-//                chartModel.addRow(new Object[]{
-//                    rs.getString("book_name"),
-//                    rs.getString("quantity")
-//                });
-//            }
-//        } catch (SQLException ex) {
-//            LOGGER.log(Level.WARNING, "Failed to build chart data", ex);
-//        }
-//
-//        JTable chartTable = new JTable(chartModel);
-//        chartTable.setFont(new Font("Tahoma", Font.PLAIN, 12));
-//        chartTable.setRowHeight(25);
-//        chartTable.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 12));
-//        chartTable.setFillsViewportHeight(true);
-//        chartTable.setEnabled(false);
-//
-//        JScrollPane scrollPane = new JScrollPane(chartTable);
-//        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-//
-//        chartPanel.removeAll();
-//        chartPanel.add(scrollPane, BorderLayout.CENTER);
-//        chartPanel.revalidate();
-//        chartPanel.repaint();
-//    }
 
     private void navigateTo(JFrame frame) {
         if (frame == null) {
@@ -780,7 +712,7 @@ public class ManageBooks extends JFrame {
 
     private void setIconImageSafe() {
         try {
-            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icons/logo.png")));
         } catch (Exception ex) {
             LOGGER.fine("Unable to set window icon.");
         }
