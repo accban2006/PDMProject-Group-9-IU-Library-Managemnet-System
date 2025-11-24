@@ -48,3 +48,5 @@ Open the project in your preferred Java IDE.
 Add the JDBC driver from dist/lib to your classpath.
 
 Build and run the application.
+
+credit: [naveenkumar-j](https://github.com/naveenkumar-j/Library-Management-System-using-Java/tree/main)
